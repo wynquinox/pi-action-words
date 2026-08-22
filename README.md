@@ -90,12 +90,14 @@ The per-phase indicators (emoji frames + animation speed) live in
 
 ```bash
 npm install
-npm run check         # lint + format check + typecheck + tests
-npm run lint          # eslint (type-checked, flat config)
+npm run check                 # lint + format check + typecheck + tests
+npm run lint                  # eslint (type-checked, flat config)
 npm run lint:fix
-npm run format        # prettier
-npm run typecheck     # tsc --noEmit
-npm test              # vitest (56 unit tests)
+npm run mutation              # Run Stryker mutation tests
+npm run mutation:ignoreStatic # Run Stryker mutation tests without static mutants
+npm run format                # prettier
+npm run typecheck             # tsc --noEmit
+npm test                      # vitest (56 unit tests)
 npm run test:watch
 ```
 

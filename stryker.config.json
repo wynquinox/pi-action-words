@@ -1,0 +1,18 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "_comment": "Mutation testing config. Run with `npm run mutation`.",
+  "checkers": ["typescript"],
+  "testRunner": "vitest",
+  "vitest": {
+    "related": false
+  },
+  "mutate": ["src/**/*.ts"],
+  "reporters": ["progress", "clear-text", "html", "json"],
+  "mutator": {
+    "excludedMutations": ["StringLiteral"]
+  },
+  "tempDirName": ".stryker-tmp",
+  "concurrency": 4,
+  "timeoutMS": 20000,
+  "ignorePatterns": [".stryker-tmp", "reports"]
+}

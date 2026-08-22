@@ -40,7 +40,7 @@ const INTERVALS_MS: Readonly<Record<ActionPhase, number>> = {
   other: 150,
 };
 
-/** Raw (un-colored) frames for a phase. */
+/** Raw frames for a phase. */
 export function getPhaseFrames(phase: ActionPhase): readonly string[] {
   return FRAMES[phase];
 }

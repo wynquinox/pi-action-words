@@ -9,6 +9,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import actionWords from "../src/index.js";
 import { THINKING_LEVELS, type ThinkingLevel } from "../src/levels.js";
+import { PHASES, PHASE_LABELS } from "../src/phases.js";
 import { buildWorkingPhrase, getPhrasePool } from "../src/phrases.js";
 
 const ELLIPSIS = "…";
@@ -118,6 +119,11 @@ describe("action-words extension adapter", () => {
 
     fire(fake, "session_start", { reason: "startup" });
     poolContains(getPhrasePool("thinking", "high"), phrasePart(lastMessage(ui)));
+    expect(ui.setStatus).toHaveBeenCalledTimes(1);
+    expect(ui.setStatus).toHaveBeenLastCalledWith(
+      "action-words",
+      "[dim]action words on (level: high)",
+    );
 
     fire(fake, "agent_start", {});
     const thinking1 = lastMessage(ui);
@@ -146,10 +152,12 @@ describe("action-words extension adapter", () => {
     fake.ctx.thinkingLevel = "max";
     fire(fake, "thinking_level_select", { level: "max", previousLevel: "high" });
     poolContains(getPhrasePool("thinking", "max"), phrasePart(lastMessage(ui)));
+    expect(ui.setStatus).toHaveBeenCalledTimes(2);
 
     // Run ends: pi defaults restored (called with no arguments).
     fire(fake, "agent_end", {});
     expect(lastMessage(ui)).toBeUndefined();
+    expect(ui.setStatus).toHaveBeenCalledTimes(3);
     const indicatorCalls = ui.setWorkingIndicator.mock.calls;
     expect(indicatorCalls[indicatorCalls.length - 1]).toEqual([]);
   });
@@ -203,6 +211,11 @@ describe("action-words extension adapter", () => {
 
     await handler!("off", fake.ctx);
     expect(lastMessage(ui)).toBeUndefined();
+    expect(ui.notify).toHaveBeenLastCalledWith("Action words disabled.", "info");
+    expect(ui.setStatus).toHaveBeenLastCalledWith(
+      "action-words",
+      "[dim]action words off (level: medium)",
+    );
 
     // While disabled, events must not touch the working message.
     const callsSoFar = ui.setWorkingMessage.mock.calls.length;
@@ -210,6 +223,14 @@ describe("action-words extension adapter", () => {
     expect(ui.setWorkingMessage.mock.calls.length).toBe(callsSoFar);
 
     await handler!("on", fake.ctx);
+    // Re-enabling must restore the working message immediately, without
+    // waiting for the next event.
+    expect(lastMessage(ui)).toBeTruthy();
+    expect(ui.notify).toHaveBeenLastCalledWith("Action words enabled.", "info");
+    expect(ui.setStatus).toHaveBeenLastCalledWith(
+      "action-words",
+      "[dim]action words on (level: medium)",
+    );
     fire(fake, "agent_start", {});
     poolContains(getPhrasePool("thinking", "medium"), phrasePart(lastMessage(ui)));
   });
@@ -225,10 +246,15 @@ describe("action-words extension adapter", () => {
     expect(ui.notify).toHaveBeenLastCalledWith(expect.stringContaining("action words on"), "info");
 
     await handler!("list", fake.ctx);
-    expect(ui.notify).toHaveBeenLastCalledWith(expect.stringContaining("Phases:"), "info");
-    for (const level of THINKING_LEVELS) {
-      expect(ui.notify.mock.calls.at(-1)?.[0]).toContain(level);
+    const listMessage = ui.notify.mock.calls.at(-1)?.[0] ?? "";
+    expect(listMessage).toContain("Phases:");
+    for (const phase of PHASES) {
+      expect(listMessage).toContain(`${phase} (${PHASE_LABELS[phase]})`);
     }
+    for (const level of THINKING_LEVELS) {
+      expect(listMessage).toContain(level);
+    }
+    expect(listMessage).not.toContain("undefined");
 
     for (const phase of ["bash", "edit", "other"]) {
       await handler!(`test ${phase}`, fake.ctx);
@@ -236,11 +262,29 @@ describe("action-words extension adapter", () => {
       expect(message).toContain(`[high/${phase}]`);
     }
 
+    // The "other" sample must carry the fake tool name; real phases must not.
+    await handler!("test other", fake.ctx);
+    expect(ui.notify.mock.calls.at(-1)?.[0]).toContain("mystery_tool");
+    await handler!("test bash", fake.ctx);
+    expect(ui.notify.mock.calls.at(-1)?.[0]).not.toContain("mystery_tool");
+
     await handler!("test wibble", fake.ctx);
     expect(ui.notify).toHaveBeenLastCalledWith(expect.stringContaining("Unknown phase"), "error");
 
     await handler!("bogus", fake.ctx);
     expect(ui.notify).toHaveBeenLastCalledWith(expect.stringContaining("Usage:"), "error");
+  });
+
+  it("tolerates irregular whitespace in command arguments", async () => {
+    const fake = createFakePi("high");
+    actionWords(fake.pi as ExtensionAPI);
+    const ui = fake.ctx.ui;
+    const handler = fake.commands.get("action-words")?.handler;
+    expect(handler).toBeTruthy();
+
+    await handler!("  test    other  ", fake.ctx);
+    expect(ui.notify).toHaveBeenLastCalledWith(expect.stringContaining("[high/other]"), "info");
+    expect(ui.notify.mock.calls.at(-1)?.[0]).toContain("mystery_tool");
   });
 
   it("always emits well-formed phrases (non-empty, with ellipsis)", () => {

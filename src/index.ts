@@ -104,10 +104,7 @@ export default function actionWords(pi: ExtensionAPI): void {
       "Fun action words for the working indicator. Usage: /action-words [on|off|list|test <phase>]",
     handler: async (args, ctx) => {
       level = normalizeThinkingLevel(ctx.thinkingLevel);
-      const parts = args
-        .trim()
-        .split(/\s+/)
-        .filter((part) => part.length > 0);
+      const parts = args.trim().split(/\s+/);
       const arg = parts[0]?.toLowerCase() ?? "";
 
       if (arg === "") {

@@ -211,7 +211,7 @@ export function formatPhasePhrase(phrase: string, phase: ActionPhase, toolName?:
   if (phase !== "other") {
     return phrase;
   }
-  const name = toolName && toolName.length > 0 ? toolName : "the tool";
+  const name = (toolName ?? "").trim() || "the tool";
   return phrase.replaceAll("{tool}", name);
 }
 

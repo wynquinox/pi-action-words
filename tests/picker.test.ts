@@ -36,6 +36,14 @@ describe("pickFromPool", () => {
     expect(pickFromPool(["a", "b", "c"], () => 0.999)).toBe("c");
   });
 
+  it("clamps rng values >= 1 to the last element, never the first", () => {
+    // `Math.min(x, 1 - EPSILON)` keeps these in [0, 1); treating >= 1 as 1+
+    // would wrap around to the first element instead of the last.
+    expect(pickFromPool(["a", "b", "c"], () => 1)).toBe("c");
+    expect(pickFromPool(["a", "b", "c"], () => 1 + Number.EPSILON)).toBe("c");
+    expect(pickFromPool(["a", "b", "c"], () => 1.5)).toBe("c");
+  });
+
   it("never returns the avoided entry when another entry exists", () => {
     const pool = ["a", "b", "c"];
     for (const seed of [0, 0.2, 0.4, 0.6, 0.8, 0.99]) {
