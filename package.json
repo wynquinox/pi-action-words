@@ -5,6 +5,10 @@
   "type": "module",
   "description": "pi extension that replaces the default \"Working...\" indicator with fun action words based on the current action and thinking level",
   "license": "MIT",
+  "engines": {
+    "node": "^22.18.0 || >=24.11.0"
+  },
+  "packageManager": "npm@11.8.0",
   "pi": {
     "extensions": [
       "./src/index.ts"
