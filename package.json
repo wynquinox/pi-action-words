@@ -22,7 +22,6 @@
     "mutation": "stryker run",
     "mutation:ignoreStatic": "stryker run --ignoreStatic",
     "check": "npm run lint && npm run knip && npm run format:check && npm run typecheck && npm run test",
-    "knip": "knip",
     "knip": "knip"
   },
   "devDependencies": {
