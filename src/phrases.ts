@@ -14,7 +14,7 @@ import { type ActionPhase } from "./phases.js";
 import { pickFromPool, type Rng } from "./picker.js";
 
 /** Phrase pool per thinking level. */
-export type LevelMap = Readonly<Record<ThinkingLevel, readonly string[]>>;
+type LevelMap = Readonly<Record<ThinkingLevel, readonly string[]>>;
 
 const THINKING_PHRASES: LevelMap = {
   off: [
