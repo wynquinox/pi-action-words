@@ -17,10 +17,13 @@
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "mutation": "stryker run",
     "mutation:ignoreStatic": "stryker run --ignoreStatic",
-    "check": "npm run lint && npm run format:check && npm run typecheck && npm run test"
+    "check": "npm run lint && npm run knip && npm run format:check && npm run typecheck && npm run test",
+    "knip": "knip",
+    "knip": "knip"
   },
   "devDependencies": {
     "@earendil-works/pi-coding-agent": "0.84.2",
@@ -28,7 +31,10 @@
     "@stryker-mutator/core": "^10.0.0",
     "@stryker-mutator/typescript-checker": "^10.0.0",
     "@stryker-mutator/vitest-runner": "^10.0.0",
+    "@types/node": "^26.2.0",
+    "@vitest/coverage-v8": "^4.1.11",
     "eslint": "^10.9.0",
+    "knip": "^6.32.2",
     "prettier": "^3.9.6",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.67.0",
