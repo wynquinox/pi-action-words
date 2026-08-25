@@ -5,104 +5,21 @@
  */
 
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import actionWords from "../src/index.js";
 import { THINKING_LEVELS, type ThinkingLevel } from "../src/levels.js";
 import { PHASES, PHASE_LABELS } from "../src/phases.js";
 import { buildWorkingPhrase, getPhrasePool } from "../src/phrases.js";
 
-const ELLIPSIS = "…";
-
-type MessageFn = ReturnType<typeof vi.fn<(message?: string) => void>>;
-type IndicatorFn = ReturnType<typeof vi.fn<(options?: unknown) => void>>;
-type StatusFn = ReturnType<typeof vi.fn<(key: string, text?: string) => void>>;
-type NotifyFn = ReturnType<
-  typeof vi.fn<(message: string, type?: "info" | "warning" | "error") => void>
->;
-
-interface FakeUi {
-  setWorkingMessage: MessageFn;
-  setWorkingIndicator: IndicatorFn;
-  setStatus: StatusFn;
-  notify: NotifyFn;
-  theme: { fg: (color: string, text: string) => string };
-}
-
-interface FakeCtx {
-  ui: FakeUi;
-  thinkingLevel: string;
-}
-
-type Handler = (event: unknown, ctx: unknown) => unknown;
-interface CommandDef {
-  description?: string;
-  handler: (args: string, ctx: unknown) => unknown;
-}
-
-interface FakePi {
-  pi: unknown;
-  handlers: Map<string, Handler[]>;
-  commands: Map<string, CommandDef>;
-  ctx: FakeCtx;
-}
-
-function createFakePi(thinkingLevel = "high"): FakePi {
-  const handlers = new Map<string, Handler[]>();
-  const commands = new Map<string, CommandDef>();
-  const ctx: FakeCtx = {
-    ui: {
-      setWorkingMessage: vi.fn(),
-      setWorkingIndicator: vi.fn(),
-      setStatus: vi.fn(),
-      notify: vi.fn(),
-      theme: { fg: (color, text) => `[${color}]${text}` },
-    },
-    thinkingLevel,
-  };
-  const pi = {
-    on: (event: string, handler: Handler) => {
-      const list = handlers.get(event) ?? [];
-      list.push(handler);
-      handlers.set(event, list);
-    },
-    registerCommand: (name: string, def: CommandDef) => {
-      commands.set(name, def);
-    },
-  };
-  return { pi, handlers, commands, ctx };
-}
-
-function fire(fake: FakePi, event: string, payload: Record<string, unknown>): void {
-  const list = fake.handlers.get(event);
-  expect(list, `handler for ${event}`).toBeTruthy();
-  for (const handler of list ?? []) {
-    handler(payload, fake.ctx);
-  }
-}
-
-/** Last message argument passed to setWorkingMessage (undefined for reset/no call). */
-function lastMessage(ui: FakeUi): string | undefined {
-  const calls = ui.setWorkingMessage.mock.calls;
-  if (calls.length === 0) {
-    return undefined;
-  }
-  const last = calls[calls.length - 1] as (string | undefined)[];
-  return last.length > 0 ? last[0] : undefined;
-}
-
-function phrasePart(message: string | undefined): string | undefined {
-  if (message === undefined) {
-    return undefined;
-  }
-  expect(message.endsWith(ELLIPSIS)).toBe(true);
-  return message.slice(0, -ELLIPSIS.length);
-}
-
-function poolContains(pool: readonly string[], phrase: string | undefined): void {
-  expect(phrase).toBeTruthy();
-  expect(pool).toContain(phrase!);
-}
+import {
+  createFakePi,
+  ELLIPSIS,
+  fire,
+  lastMessage,
+  phrasePart,
+  poolContains,
+} from "./mocks/mock-pi.js";
 
 describe("action-words extension adapter", () => {
   it("registers the /action-words command", () => {
