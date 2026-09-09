@@ -57,3 +57,8 @@ const TOOL_PHASES: Readonly<Record<string, ActionPhase>> = {
 export function mapToolToPhase(toolName: string): ActionPhase {
   return TOOL_PHASES[toolName] ?? "other";
 }
+
+/** Type guard for arbitrary strings (e.g. command arguments). */
+export function isActionPhase(value: string): value is ActionPhase {
+  return (PHASES as readonly string[]).includes(value);
+}

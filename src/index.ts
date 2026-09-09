@@ -17,8 +17,13 @@
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
 
 import { buildIndicator } from "./indicators.js";
-import { normalizeThinkingLevel, THINKING_LEVELS, type ThinkingLevel } from "./levels.js";
-import { PHASES, PHASE_LABELS, type ActionPhase } from "./phases.js";
+import {
+  DEFAULT_THINKING_LEVEL,
+  normalizeThinkingLevel,
+  THINKING_LEVELS,
+  type ThinkingLevel,
+} from "./levels.js";
+import { isActionPhase, PHASES, PHASE_LABELS } from "./phases.js";
 import { buildWorkingPhrase } from "./phrases.js";
 import { WorkingPhaseTracker } from "./tracker.js";
 
@@ -28,7 +33,7 @@ const ELLIPSIS = "…";
 export default function actionWords(pi: ExtensionAPI): void {
   const tracker = new WorkingPhaseTracker();
   let enabled = true;
-  let level: ThinkingLevel = "medium";
+  let level: ThinkingLevel = DEFAULT_THINKING_LEVEL;
   /** Last phrase shown per `${phase}:${level}` key, to avoid repeats. */
   const lastPhrases = new Map<string, string>();
 
@@ -138,11 +143,11 @@ export default function actionWords(pi: ExtensionAPI): void {
 
       if (arg === "test") {
         const phaseArg = parts[1]?.toLowerCase();
-        if (phaseArg !== undefined && !(PHASES as readonly string[]).includes(phaseArg)) {
+        if (phaseArg !== undefined && !isActionPhase(phaseArg)) {
           ctx.ui.notify(`Unknown phase "${phaseArg}". Phases: ${PHASES.join(", ")}`, "error");
           return;
         }
-        const phase = (phaseArg as ActionPhase | undefined) ?? "thinking";
+        const phase = phaseArg ?? "thinking";
         const toolName = phase === "other" ? "mystery_tool" : undefined;
         const sample = buildWorkingPhrase({ phase, level, toolName });
         ctx.ui.notify(`🎬 [${level}/${phase}] "${sample}${ELLIPSIS}"`, "info");

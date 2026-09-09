@@ -49,10 +49,8 @@ export class WorkingPhaseTracker {
   }
 
   private latest(): ActiveTool | undefined {
-    let result: ActiveTool | undefined;
-    for (const entry of this.active.values()) {
-      result = entry;
-    }
-    return result;
+    // Map iteration order is insertion order, so the last value is the most
+    // recently started tool still in flight.
+    return [...this.active.values()].at(-1);
   }
 }
