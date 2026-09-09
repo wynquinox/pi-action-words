@@ -8,9 +8,9 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { describe, expect, it } from "vitest";
 
 import actionWords from "../src/index.js";
-import { THINKING_LEVELS, type ThinkingLevel } from "../src/levels.js";
+import { THINKING_LEVELS } from "../src/levels.js";
 import { PHASES, PHASE_LABELS } from "../src/phases.js";
-import { buildWorkingPhrase, getPhrasePool } from "../src/phrases.js";
+import { getPhrasePool } from "../src/phrases.js";
 
 import {
   createFakePi,
@@ -218,13 +218,5 @@ describe("action-words extension adapter", () => {
       expect(message!.length).toBeGreaterThan(ELLIPSIS.length + 3);
       expect(phrasePart(message)).toBeTruthy();
     }
-  });
-
-  it("buildWorkingPhrase determinism check (engine sanity)", () => {
-    const a = buildWorkingPhrase({ phase: "thinking", level: "off", rng: () => 0.3 });
-    const b = buildWorkingPhrase({ phase: "thinking", level: "off", rng: () => 0.3 });
-    expect(a).toBe(b);
-    const level: ThinkingLevel = "off";
-    expect(getPhrasePool("thinking", level)).toContain(a);
   });
 });

@@ -8,10 +8,10 @@ vi.mock("../src/phrases.js", () => ({
 
 export const ELLIPSIS = "…";
 
-export type MessageFn = ReturnType<typeof vi.fn<(message?: string) => void>>;
-export type IndicatorFn = ReturnType<typeof vi.fn<(options?: unknown) => void>>;
-export type StatusFn = ReturnType<typeof vi.fn<(key: string, text?: string) => void>>;
-export type NotifyFn = ReturnType<
+type MessageFn = ReturnType<typeof vi.fn<(message?: string) => void>>;
+type IndicatorFn = ReturnType<typeof vi.fn<(options?: unknown) => void>>;
+type StatusFn = ReturnType<typeof vi.fn<(key: string, text?: string) => void>>;
+type NotifyFn = ReturnType<
   typeof vi.fn<(message: string, type?: "info" | "warning" | "error") => void>
 >;
 
@@ -28,8 +28,8 @@ export interface FakeCtx {
   thinkingLevel: string;
 }
 
-export type Handler = (event: unknown, ctx: unknown) => unknown;
-export interface CommandDef {
+type Handler = (event: unknown, ctx: unknown) => unknown;
+interface CommandDef {
   description?: string;
   handler: (args: string, ctx: unknown) => unknown;
 }
